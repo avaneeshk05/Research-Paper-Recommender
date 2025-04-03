@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Paper Recommendation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            text-align: center; 
+            background-color: #f4f4f9; 
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+        h2 {
+            color: #333;
+        }
+        textarea { 
+            width: 90%; 
+            height: 150px; 
+            margin-bottom: 10px; 
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: none;
+        }
+        button { 
+            padding: 12px 20px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            background-color: #007bff; 
+            color: white; 
+            border: none;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .loader {
+            display: none;
+            margin: 15px auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #results {
+            margin-top: 20px; 
+            font-size: 18px;
+            display: none;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li{
+            background: #f8f9fa;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Research Paper Recommendation System</h2>
+        <p>Enter a summary of your research paper:</p>
+        <textarea id="summary" placeholder="Enter paper summary here..."></textarea><br>
+        <button onclick="getRecommendations()">Get Recommendations</button>
+        <div class="loader"></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function getRecommendations() {
+            let summary = $("#summary").val().trim();
+            if (!summary) {
+                alert("Please enter a summary!");
+                return;
+            }
+
+            $("#results").hide();
+            $(".loader").show();
+
+            $.ajax({
+                url: "/recommend",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ "summary": summary, "top_n": 5 }),
+                success: function(response) {
+                    $(".loader").hide();
+                    let resultHtml = "<h3>Recommended Papers:</h3><ul>";
+                    let papers=response.recommended_papers;
+                    let urls=response.urls;
+                    for(let i=0;i<papers.length;i++)
+                    {
+                        resultHtml += `<li><a href="${urls[i]}">${i + 1}. ${papers[i]}</a></li>`;
+                    }
+                    resultHtml += "</ul>";
+                    $("#results").html(resultHtml).fadeIn();
+                },
+                error: function(xhr) {
+                    $(".loader").hide();
+                    $("#results").html("<p style='color: red;'>Error retrieving recommendations. Please try again later.</p>").fadeIn();
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>

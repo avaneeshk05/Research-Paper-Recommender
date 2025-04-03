@@ -1,0 +1,11 @@
+runtime: python310  # Use Python 3.10, the latest supported version
+env: flex
+entrypoint: gunicorn -b :$PORT app:app
+
+instance_class: F4  # Higher instance class for ML workloads
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 5
+  cool_down_period_sec: 180
+  cpu_utilization:
+    target_utilization: 0.65
